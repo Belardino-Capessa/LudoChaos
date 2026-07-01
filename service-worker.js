@@ -1,4 +1,4 @@
-const CACHE_NAME = "ludochaos-v6.1";
+const CACHE_NAME = "ludochaos-v6.2";
 
 // =========================
 // ARQUIVOS ESSENCIAIS
@@ -8,56 +8,46 @@ const FILES = [
   "./index.html",
   "./manifest.json",
 
-  // =========================
   // ICONS
-  // =========================
   "./assets/imagem/logo192.png",
   "./assets/imagem/logo512.png",
   "./assets/imagem/logo.png",
 
-  // =========================
   // SCREENSHOTS
-  // =========================
   "./assets/imagem/screen1.png",
   "./assets/imagem/screen2.png",
   "./assets/imagem/screen3.png",
   "./assets/imagem/screen4.png",
   "./assets/imagem/screen5.png",
 
-  // =========================
   // FONT AWESOME
-  // =========================
   "./assets/fontawesome/css/all.min.css",
   "./assets/fontawesome/webfonts/fa-solid-900.woff2",
   "./assets/fontawesome/webfonts/fa-regular-400.woff2",
   "./assets/fontawesome/webfonts/fa-brands-400.woff2",
 
-  // =========================
-  // FONTES (.ttf corretos)
-  // =========================
+  // FONTES
   "./assets/fontes/DMSerifDisplay-Regular.ttf",
   "./assets/fontes/Inter-Bold.ttf",
   "./assets/fontes/Inter-Medium.ttf",
   "./assets/fontes/Inter-Regular.ttf",
   "./assets/fontes/Inter-SemiBold.ttf",
 
-  // =========================
   // SONS
-  // =========================
   "./assets/musicas/fundo.mp3",
   "./assets/musicas/fundo1.mp3",
   "./assets/musicas/vitoria.mp3"
 ];
 
 // =========================
-// INSTALL (CACHE SEGURO)
+// INSTALL
 // =========================
 self.addEventListener("install", (event) => {
   self.skipWaiting();
 
   event.waitUntil(
     caches.open(CACHE_NAME).then(async (cache) => {
-      console.log("📦 Cache LudoChaos v6.1");
+      console.log("📦 Cache LudoChaos v6.2");
 
       for (const file of FILES) {
         try {
@@ -71,16 +61,14 @@ self.addEventListener("install", (event) => {
 });
 
 // =========================
-// ACTIVATE (limpa versões antigas)
+// ACTIVATE
 // =========================
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
       Promise.all(
         keys.map((key) => {
-          if (key !== CACHE_NAME) {
-            return caches.delete(key);
-          }
+          if (key !== CACHE_NAME) return caches.delete(key);
         })
       )
     )
@@ -90,12 +78,11 @@ self.addEventListener("activate", (event) => {
 });
 
 // =========================
-// FETCH (OFFLINE FIRST REAL)
+// FETCH (offline first)
 // =========================
 self.addEventListener("fetch", (event) => {
   const req = event.request;
 
-  // HTML (navegação)
   if (req.mode === "navigate") {
     event.respondWith(
       fetch(req).catch(() => caches.match("./index.html"))
@@ -103,13 +90,9 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Assets (cache-first)
   event.respondWith(
     caches.match(req).then((cached) => {
-      return (
-        cached ||
-        fetch(req).catch(() => cached || caches.match("./index.html"))
-      );
+      return cached || fetch(req).catch(() => cached);
     })
   );
 });
@@ -124,7 +107,20 @@ self.addEventListener("sync", (event) => {
 });
 
 async function syncGameData() {
-  console.log("🔄 Sync LudoChaos v6.1 executado");
+  console.log("🔄 Sync manual LudoChaos executado");
+}
+
+// =========================
+// PERIODIC BACKGROUND SYNC
+// =========================
+self.addEventListener("periodicsync", (event) => {
+  if (event.tag === "sync-ludochaos-periodic") {
+    event.waitUntil(syncPeriodicData());
+  }
+});
+
+async function syncPeriodicData() {
+  console.log("⏳ Sync periódica LudoChaos executada");
 }
 
 // =========================
