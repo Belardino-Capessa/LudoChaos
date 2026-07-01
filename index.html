@@ -90,7 +90,7 @@ if ("serviceWorker" in navigator) {
 }
 
 // =========================
-// BACKGROUND SYNC REQUEST
+// MANUAL SYNC REQUEST
 // =========================
 function requestSync() {
   if ("serviceWorker" in navigator && "SyncManager" in window) {
@@ -101,7 +101,34 @@ function requestSync() {
 }
 
 // =========================
-// PUSH NOTIFICATION ENABLE
+// PERIODIC SYNC REQUEST
+// =========================
+async function enablePeriodicSync() {
+  if (!("serviceWorker" in navigator)) return;
+
+  const reg = await navigator.serviceWorker.ready;
+
+  if ("periodicSync" in reg) {
+    try {
+      const status = await navigator.permissions.query({
+        name: "periodic-background-sync"
+      });
+
+      if (status.state === "granted") {
+        await reg.periodicSync.register("sync-ludochaos-periodic", {
+          minInterval: 24 * 60 * 60 * 1000
+        });
+
+        console.log("🔄 Sync periódica ativada");
+      }
+    } catch (e) {
+      console.log("⚠️ Periodic sync não suportado");
+    }
+  }
+}
+
+// =========================
+// PUSH NOTIFICATIONS
 // =========================
 async function enablePush() {
   const permission = await Notification.requestPermission();
@@ -110,7 +137,7 @@ async function enablePush() {
     console.log("🔔 Notificações ativadas");
   }
 }
-</script>
+          </script>
 <style>
 /* =====================================================
    FONTES OFFLINE
